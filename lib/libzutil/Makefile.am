@@ -31,6 +31,7 @@ endif
 
 if BUILD_ILLUMOS
 libzutil_la_SOURCES += \
+	%D%/os/illumos/zutil_setproctitle.c \
 	%D%/os/illumos/zutil_device_path_os.c \
 	%D%/os/illumos/zutil_import_os.c
 endif

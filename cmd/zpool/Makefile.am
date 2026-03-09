@@ -25,6 +25,11 @@ zpool_SOURCES += \
 	%D%/os/linux/zpool_vdev_os.c
 endif
 
+if BUILD_ILLUMOS
+zpool_SOURCES += \
+	%D%/os/illumos/zpool_vdev_os.c
+endif
+
 zpool_LDADD = \
 	libzfs.la \
 	libzfs_core.la \

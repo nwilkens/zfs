@@ -41,6 +41,15 @@ dist_libzfs_la_SOURCES += \
 	%D%/os/linux/libzfs_util_os.c
 endif
 
+if BUILD_ILLUMOS
+dist_libzfs_la_SOURCES += \
+	%D%/os/illumos/libzfs_mount_os.c \
+	%D%/os/illumos/libzfs_pool_os.c \
+	%D%/os/illumos/libzfs_share_nfs.c \
+	%D%/os/illumos/libzfs_share_smb.c \
+	%D%/os/illumos/libzfs_util_os.c
+endif
+
 nodist_libzfs_la_SOURCES = \
 	module/zcommon/cityhash.c \
 	module/zcommon/zfeature_common.c \
