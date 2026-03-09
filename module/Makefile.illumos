@@ -27,7 +27,7 @@ INCDIR		= $(CURDIR)/include
 UTS		?= /opt/openzfs_build/smartos-live/projects/illumos/usr/src/uts
 
 MODULE		= zfs
-OBJDIR		= $(CURDIR)/obj-illumos
+OBJDIR		= obj-illumos
 BINARY		= $(OBJDIR)/$(MODULE)
 
 CC		= gcc
@@ -64,12 +64,12 @@ KINC		= -include $(CURDIR)/zfs_config.h
 KINC		+= -include $(INCDIR)/sys/simd_config.h
 KINC		+= -I$(INCDIR)/os/illumos/spl
 KINC		+= -I$(INCDIR)/os/illumos/zfs
+KINC		+= -I$(SRCDIR)/icp/include
 KINC		+= -I$(INCDIR)
 KINC		+= -I$(UTS)/common
 KINC		+= -I$(UTS)/intel
 KINC		+= -I$(UTS)/i86pc
 KINC		+= -I$(UTS)/common/fs/zfs
-KINC		+= -I$(SRCDIR)/icp/include
 KINC		+= -I$(SRCDIR)/zstd/include
 KINC		+= -I$(CURDIR)/lib/libspl/include/os/illumos
 
@@ -178,7 +178,6 @@ ICP_C_SRCS = \
 	aes_impl_x86-64.c aes_modes.c aeskey.c \
 	blake3.c blake3_generic.c blake3_impl.c \
 	ccm.c edonr.c gcm.c gcm_generic.c gcm_pclmulqdq.c \
-	generic_impl.c illumos-crypto.c \
 	kcf_callprov.c kcf_cipher.c kcf_ctxops.c kcf_mac.c \
 	kcf_mech_tabs.c kcf_prov_lib.c kcf_prov_tabs.c kcf_sched.c \
 	kcf_spi.c modes.c \

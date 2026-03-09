@@ -48,6 +48,8 @@ extern "C" {
 #include <sys/stdint.h>
 #elif defined(__linux__)
 #include <linux/types.h>
+#elif defined(__illumos__)
+#include <sys/types.h>
 #else
 #error "Unsupported platform"
 #endif

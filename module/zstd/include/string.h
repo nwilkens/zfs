@@ -49,6 +49,9 @@ extern "C" {
 #include <sys/systm.h>    /* memcpy, memset */
 #elif defined(__linux__)
 #include <linux/string.h> /* memcpy, memset */
+#elif defined(__illumos__)
+#include <sys/types.h>
+#include <sys/systm.h>    /* memcpy, memset, bcopy */
 #else
 #error "Unsupported platform"
 #endif

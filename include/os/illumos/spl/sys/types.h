@@ -34,6 +34,11 @@
  */
 #include_next <sys/types.h>
 
+/* Ensure NULL is available in kernel context */
+#if defined(_KERNEL) && !defined(NULL)
+#include <sys/null.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

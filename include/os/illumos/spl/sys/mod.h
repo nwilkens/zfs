@@ -90,6 +90,14 @@
  * the top-level _init/_fini in zfs.c.  The macros themselves just provide
  * the function prototype with the expected signature.
  */
+/*
+ * Linux kernel module parameter macros — no-op on illumos.
+ */
+#define	module_param(a, b, c)
+#define	module_param_call(a, b, c, d, e)
+#define	module_param_named(a, b, c, d)
+#define	MODULE_PARM_DESC(a, b)
+
 #define	module_init(fn)		\
 	void zfs_mod_init_##fn(void) { fn(); }
 
