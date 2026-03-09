@@ -49,7 +49,13 @@
 
 #endif	/* __amd64__ || __i386__ */
 
+/*
+ * simd_stat_init/fini are provided by module/zcommon/simd_stat.c
+ * in kernel builds.  Only stub them in userland.
+ */
+#if !defined(_KERNEL) && !defined(__KERNEL__)
 #define	simd_stat_init()	do {} while (0)
 #define	simd_stat_fini()	do {} while (0)
+#endif
 
 #endif	/* _SPL_SYS_SIMD_H */

@@ -1,0 +1,317 @@
+#
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
+#
+# A full copy of the text of the CDDL should have accompanied this
+# source. A copy of the CDDL is also available via the Internet at
+# http://www.illumos.org/license/CDDL.
+#
+
+#
+# Copyright 2025 MNX Cloud, Inc.
+#
+
+#
+# OpenZFS kernel module build for illumos.
+#
+# Usage:
+#   gmake -f module/Makefile.illumos [UTS=path/to/uts]
+#
+# This produces a single kernel module 'zfs' suitable for modload(8).
+#
+
+SRCDIR		= $(CURDIR)/module
+INCDIR		= $(CURDIR)/include
+UTS		?= /opt/openzfs_build/smartos-live/projects/illumos/usr/src/uts
+
+MODULE		= zfs
+OBJDIR		= $(CURDIR)/obj-illumos
+BINARY		= $(OBJDIR)/$(MODULE)
+
+CC		= gcc
+LD		= ld
+CTFCONVERT	= /opt/onbld/bin/i386/ctfconvert
+CTFMERGE	= /opt/onbld/bin/i386/ctfmerge
+
+#
+# Kernel compilation flags (from uts/Makefile.uts + uts/intel/Makefile.intel)
+#
+KCFLAGS		= -m64 -std=gnu11
+KCFLAGS		+= -ffreestanding -fno-builtin -fno-strict-aliasing -fno-common
+KCFLAGS		+= -mno-red-zone -mcmodel=kernel
+KCFLAGS		+= -fno-omit-frame-pointer
+KCFLAGS		+= -Wall -Wno-missing-braces -Wno-sign-compare
+KCFLAGS		+= -Wno-unused-parameter -Wno-missing-field-initializers
+KCFLAGS		+= -Wno-type-limits -Wno-switch -Wno-parentheses
+KCFLAGS		+= -Wno-unused-variable -Wno-unused-function
+KCFLAGS		+= -O2
+
+#
+# Kernel preprocessor defines
+#
+KDEFS		= -D_KERNEL -D__KERNEL__
+KDEFS		+= -D_SYSCALL32 -D_SYSCALL32_IMPL -D_ELF64 -D_DDI_STRICT
+KDEFS		+= -Dsun -D__sun -D__SVR4 -D__illumos__
+KDEFS		+= -DBUILDING_ZFS -DHAVE_CONFIG_H
+KDEFS		+= -DTEXT_DOMAIN=\"zfs-illumos-kernel\"
+
+#
+# Include paths — order matters for #include_next chaining
+#
+KINC		= -include $(CURDIR)/zfs_config.h
+KINC		+= -include $(INCDIR)/sys/simd_config.h
+KINC		+= -I$(INCDIR)/os/illumos/spl
+KINC		+= -I$(INCDIR)/os/illumos/zfs
+KINC		+= -I$(INCDIR)
+KINC		+= -I$(UTS)/common
+KINC		+= -I$(UTS)/intel
+KINC		+= -I$(UTS)/i86pc
+KINC		+= -I$(UTS)/common/fs/zfs
+KINC		+= -I$(SRCDIR)/icp/include
+KINC		+= -I$(SRCDIR)/zstd/include
+KINC		+= -I$(CURDIR)/lib/libspl/include/os/illumos
+
+CFLAGS		= $(KCFLAGS) $(KDEFS) $(KINC)
+
+#
+# Linker flags for kernel module
+#
+LDFLAGS		= -ztype=kmod -64
+LDFLAGS		+= -Nfs/specfs -Ncrypto/swrand -Nmisc/idmap
+LDFLAGS		+= -Nmisc/sha2 -Nmisc/skein -Nmisc/edonr
+
+# ============================================================
+# Source file lists
+# ============================================================
+
+#
+# Platform-neutral ZFS core (module/zfs/)
+#
+ZFS_SRCS = \
+	abd.c aggsum.c arc.c blake3_zfs.c blkptr.c bplist.c bpobj.c \
+	bptree.c bqueue.c brt.c btree.c dataset_kstats.c dbuf.c \
+	dbuf_stats.c ddt.c ddt_log.c ddt_stats.c ddt_zap.c dmu.c \
+	dmu_diff.c dmu_direct.c dmu_object.c dmu_objset.c dmu_recv.c \
+	dmu_redact.c dmu_send.c dmu_traverse.c dmu_tx.c dmu_zfetch.c \
+	dnode.c dnode_sync.c dsl_bookmark.c dsl_crypt.c dsl_dataset.c \
+	dsl_deadlist.c dsl_deleg.c dsl_destroy.c dsl_dir.c dsl_pool.c \
+	dsl_prop.c dsl_scan.c dsl_synctask.c dsl_userhold.c edonr_zfs.c \
+	fm.c gzip.c hkdf.c lz4.c lz4_zfs.c lzjb.c metaslab.c mmp.c \
+	multilist.c objlist.c pathname.c range_tree.c refcount.c \
+	rrwlock.c sa.c sha2_zfs.c skein_zfs.c spa.c spa_checkpoint.c \
+	spa_config.c spa_errlog.c spa_history.c spa_log_spacemap.c \
+	spa_misc.c spa_stats.c space_map.c space_reftree.c txg.c \
+	u8_textprep.c uberblock.c unique.c vdev.c vdev_draid.c \
+	vdev_draid_rand.c vdev_file.c vdev_indirect.c \
+	vdev_indirect_births.c vdev_indirect_mapping.c vdev_initialize.c \
+	vdev_label.c vdev_mirror.c vdev_missing.c vdev_queue.c \
+	vdev_raidz.c vdev_raidz_math.c vdev_raidz_math_avx2.c \
+	vdev_raidz_math_avx512bw.c vdev_raidz_math_avx512f.c \
+	vdev_raidz_math_scalar.c vdev_raidz_math_sse2.c \
+	vdev_raidz_math_ssse3.c vdev_rebuild.c vdev_removal.c \
+	vdev_root.c vdev_trim.c zap.c zap_leaf.c zap_micro.c zcp.c \
+	zcp_get.c zcp_global.c zcp_iter.c zcp_set.c zcp_synctask.c \
+	zfeature.c zfs_byteswap.c zfs_chksum.c zfs_crrd.c \
+	zfs_debug_common.c zfs_fm.c zfs_fuid.c zfs_impl.c zfs_ioctl.c \
+	zfs_log.c zfs_onexit.c zfs_quota.c zfs_ratelimit.c zfs_replay.c \
+	zfs_rlock.c zfs_sa.c zfs_vnops.c zfs_znode.c zil.c zio.c \
+	zio_checksum.c zio_compress.c zio_inject.c zle.c zrlock.c \
+	zthr.c zvol.c
+
+#
+# illumos SPL (module/os/illumos/spl/)
+#
+SPL_SRCS = \
+	acl_common.c callb.c list.c spl_acl.c spl_atomic.c spl_cmn_err.c \
+	spl_dtrace.c spl_kmem.c spl_kstat.c spl_misc.c spl_policy.c \
+	spl_procfs_list.c spl_string.c spl_sunddi.c spl_sysevent.c \
+	spl_taskq.c spl_uio.c spl_vfs.c spl_vm.c spl_zlib.c spl_zone.c
+
+#
+# illumos ZFS OS-specific (module/os/illumos/zfs/)
+#
+ZFS_OS_SRCS = \
+	abd_os.c arc_os.c crypto_os.c dmu_os.c event_os.c kmod_core.c \
+	spa_os.c sysctl_os.c vdev_disk.c vdev_label_os.c zfs_acl.c \
+	zfs_ctldir.c zfs_debug.c zfs_dir.c zfs_file_os.c zfs_ioctl_os.c \
+	zfs_racct.c zfs_vfsops.c zfs_vnops_os.c zfs_znode_os.c \
+	zio_crypt.c zvol_os.c
+
+#
+# Lua interpreter (module/lua/)
+#
+LUA_SRCS = \
+	lapi.c lauxlib.c lbaselib.c lcode.c lcompat.c lcorolib.c \
+	lctype.c ldebug.c ldo.c lfunc.c lgc.c llex.c lmem.c lobject.c \
+	lopcodes.c lparser.c lstate.c lstring.c lstrlib.c ltable.c \
+	ltablib.c ltm.c lvm.c lzio.c
+
+#
+# ZFS common (module/zcommon/)
+#
+ZCOMMON_SRCS = \
+	cityhash.c simd_stat.c zfeature_common.c zfs_comutil.c \
+	zfs_deleg.c zfs_fletcher.c zfs_fletcher_avx512.c \
+	zfs_fletcher_intel.c zfs_fletcher_sse.c \
+	zfs_fletcher_superscalar.c zfs_fletcher_superscalar4.c \
+	zfs_namecheck.c zfs_prop.c zfs_valstr.c zpool_prop.c \
+	zprop_common.c
+
+#
+# NVPair (module/nvpair/)
+#
+NVPAIR_SRCS = \
+	fnvpair.c nvpair.c nvpair_alloc_fixed.c nvpair_alloc_spl.c
+
+#
+# AVL (module/avl/)
+#
+AVL_SRCS = avl.c
+
+#
+# ICP — illumos Crypto Portable (module/icp/)
+#
+ICP_C_SRCS = \
+	aes.c aes_impl.c aes_impl_aesni.c aes_impl_generic.c \
+	aes_impl_x86-64.c aes_modes.c aeskey.c \
+	blake3.c blake3_generic.c blake3_impl.c \
+	ccm.c edonr.c gcm.c gcm_generic.c gcm_pclmulqdq.c \
+	generic_impl.c illumos-crypto.c \
+	kcf_callprov.c kcf_cipher.c kcf_ctxops.c kcf_mac.c \
+	kcf_mech_tabs.c kcf_prov_lib.c kcf_prov_tabs.c kcf_sched.c \
+	kcf_spi.c modes.c \
+	sha2_generic.c sha2_mod.c sha256_impl.c sha512_impl.c \
+	skein.c skein_block.c skein_iv.c
+
+ICP_ASM_SRCS = \
+	aes_aesni.S aes_amd64.S \
+	aesni-gcm-avx2-vaes.S aesni-gcm-x86_64.S \
+	blake3_avx2.S blake3_avx512.S blake3_sse2.S blake3_sse41.S \
+	gcm_pclmulqdq.S ghash-x86_64.S \
+	sha256-x86_64.S sha512-x86_64.S
+
+#
+# ZSTD (module/zstd/)
+#
+ZSTD_SRCS = \
+	zfs_zstd.c \
+	entropy_common.c error_private.c fse_decompress.c pool.c \
+	zstd_common.c \
+	fse_compress.c hist.c huf_compress.c zstd_compress.c \
+	zstd_compress_literals.c zstd_compress_sequences.c \
+	zstd_compress_superblock.c zstd_double_fast.c zstd_fast.c \
+	zstd_lazy.c zstd_ldm.c zstd_opt.c zstd_preSplit.c \
+	huf_decompress.c zstd_ddict.c zstd_decompress.c \
+	zstd_decompress_block.c
+
+# ============================================================
+# VPATH — where to find source files
+# ============================================================
+
+vpath %.c $(SRCDIR)/zfs
+vpath %.c $(SRCDIR)/os/illumos/spl
+vpath %.c $(SRCDIR)/os/illumos/zfs
+vpath %.c $(SRCDIR)/lua
+vpath %.c $(SRCDIR)/zcommon
+vpath %.c $(SRCDIR)/nvpair
+vpath %.c $(SRCDIR)/avl
+vpath %.c $(SRCDIR)/icp
+vpath %.c $(SRCDIR)/icp/algs/aes
+vpath %.c $(SRCDIR)/icp/algs/blake3
+vpath %.c $(SRCDIR)/icp/algs/edonr
+vpath %.c $(SRCDIR)/icp/algs/modes
+vpath %.c $(SRCDIR)/icp/algs/sha2
+vpath %.c $(SRCDIR)/icp/algs/skein
+vpath %.c $(SRCDIR)/icp/api
+vpath %.c $(SRCDIR)/icp/core
+vpath %.c $(SRCDIR)/icp/io
+vpath %.c $(SRCDIR)/icp/spi
+vpath %.c $(SRCDIR)/icp/include
+vpath %.c $(SRCDIR)/icp/asm-x86_64/aes
+vpath %.S $(SRCDIR)/icp/asm-x86_64/aes
+vpath %.S $(SRCDIR)/icp/asm-x86_64/blake3
+vpath %.S $(SRCDIR)/icp/asm-x86_64/modes
+vpath %.S $(SRCDIR)/icp/asm-x86_64/sha2
+vpath %.c $(SRCDIR)/zstd
+vpath %.c $(SRCDIR)/zstd/lib/common
+vpath %.c $(SRCDIR)/zstd/lib/compress
+vpath %.c $(SRCDIR)/zstd/lib/decompress
+
+# ============================================================
+# Object file lists
+# ============================================================
+
+ALL_C_SRCS = $(ZFS_SRCS) $(SPL_SRCS) $(ZFS_OS_SRCS) $(LUA_SRCS) \
+	$(ZCOMMON_SRCS) $(NVPAIR_SRCS) $(AVL_SRCS) $(ICP_C_SRCS) \
+	$(ZSTD_SRCS)
+
+ALL_OBJS = $(ALL_C_SRCS:%.c=$(OBJDIR)/%.o) $(ICP_ASM_SRCS:%.S=$(OBJDIR)/%.o)
+
+# ============================================================
+# Build rules
+# ============================================================
+
+.PHONY: all clean
+
+all: $(BINARY)
+
+$(BINARY): $(ALL_OBJS)
+	$(LD) $(LDFLAGS) -o $@ $(ALL_OBJS)
+	@echo "=== Kernel module built: $@ ==="
+
+$(OBJDIR)/%.o: %.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.S | $(OBJDIR)
+	$(CC) $(CFLAGS) -D_ASM -c -o $@ $<
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+clean:
+	rm -rf $(OBJDIR)
+
+#
+# Per-file overrides
+#
+# ZSTD needs extra flags
+$(OBJDIR)/zfs_zstd.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/entropy_common.o: CFLAGS += -I$(SRCDIR)/zstd/include -Wno-implicit-fallthrough
+$(OBJDIR)/error_private.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/fse_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include -Wno-implicit-fallthrough
+$(OBJDIR)/pool.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_common.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/fse_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include -Wno-implicit-fallthrough
+$(OBJDIR)/hist.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/huf_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/huf_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_compress_literals.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_compress_sequences.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_compress_superblock.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_double_fast.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_fast.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_lazy.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_ldm.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_opt.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_preSplit.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_ddict.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include
+$(OBJDIR)/zstd_decompress_block.o: CFLAGS += -I$(SRCDIR)/zstd/include
+
+# AVX2/AVX512 files need specific ISA flags
+$(OBJDIR)/vdev_raidz_math_avx2.o: CFLAGS += -mavx2
+$(OBJDIR)/vdev_raidz_math_avx512bw.o: CFLAGS += -mavx512bw
+$(OBJDIR)/vdev_raidz_math_avx512f.o: CFLAGS += -mavx512f
+$(OBJDIR)/vdev_raidz_math_sse2.o: CFLAGS += -msse2
+$(OBJDIR)/vdev_raidz_math_ssse3.o: CFLAGS += -mssse3
+$(OBJDIR)/zfs_fletcher_avx512.o: CFLAGS += -mavx512f
+$(OBJDIR)/zfs_fletcher_intel.o: CFLAGS += -mssse3
+$(OBJDIR)/zfs_fletcher_sse.o: CFLAGS += -msse2
+
+# ICP crypto needs ISA flags for hardware acceleration
+$(OBJDIR)/aes_impl_aesni.o: CFLAGS += -maes
+$(OBJDIR)/aes_impl_x86-64.o: CFLAGS += -maes
+$(OBJDIR)/gcm_pclmulqdq.o: CFLAGS += -mpclmul

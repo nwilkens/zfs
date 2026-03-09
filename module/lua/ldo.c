@@ -66,7 +66,15 @@ static intptr_t stack_remaining(void) {
 
 #ifdef _KERNEL
 
-#ifdef __linux__
+#if defined(__illumos__)
+/*
+ * illumos kernel provides setjmp/longjmp with label_t.
+ */
+#define	LUAI_THROW(L,c)	longjmp(&(c)->b)
+#define	LUAI_TRY(L,c,a)	if (setjmp(&(c)->b) == 0) { a }
+#define	luai_jmpbuf		label_t
+
+#elif defined(__linux__)
 #if defined(__i386__)
 #define	JMP_BUF_CNT	6
 #elif defined(__x86_64__)

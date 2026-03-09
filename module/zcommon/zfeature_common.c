@@ -37,6 +37,8 @@
 #include <dirent.h>
 #include <search.h>
 #include <sys/stat.h>
+#else
+#include <sys/errno.h>
 #endif
 #include <sys/debug.h>
 #include <sys/fs/zfs.h>

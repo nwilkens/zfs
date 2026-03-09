@@ -33,4 +33,15 @@
  */
 #include_next <sys/isa_defs.h>
 
+/*
+ * OpenZFS uses _ZFS_BIG_ENDIAN / _ZFS_LITTLE_ENDIAN.
+ * Map from the illumos native _BIG_ENDIAN / _LITTLE_ENDIAN.
+ */
+#if defined(_BIG_ENDIAN) && !defined(_ZFS_BIG_ENDIAN)
+#define	_ZFS_BIG_ENDIAN
+#endif
+#if defined(_LITTLE_ENDIAN) && !defined(_ZFS_LITTLE_ENDIAN)
+#define	_ZFS_LITTLE_ENDIAN
+#endif
+
 #endif	/* _SPL_SYS_ISA_DEFS_H */
