@@ -68,6 +68,7 @@ typedef struct {
 
 typedef struct zfs_uio {
 	uio_t		*uio;
+	zfs_uio_rw_t	uio_rw;		/* illumos uio_t lacks uio_rw */
 	offset_t	uio_soffset;
 	uint16_t	uio_extflg;
 	zfs_uio_dio_t	uio_dio;
@@ -80,7 +81,7 @@ typedef struct zfs_uio {
 #define	zfs_uio_iovcnt(u)	GET_UIO_STRUCT(u)->uio_iovcnt
 #define	zfs_uio_iovlen(u, idx)	GET_UIO_STRUCT(u)->uio_iov[(idx)].iov_len
 #define	zfs_uio_iovbase(u, idx)	GET_UIO_STRUCT(u)->uio_iov[(idx)].iov_base
-#define	zfs_uio_rw(u)		GET_UIO_STRUCT(u)->uio_rw
+#define	zfs_uio_rw(u)		(u)->uio_rw
 #define	zfs_uio_soffset(u)	(u)->uio_soffset
 #define	zfs_uio_fault_disable(u, set)
 #define	zfs_uio_prefaultpages(size, u)	(0)
