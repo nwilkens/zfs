@@ -46,5 +46,14 @@
 #ifndef MS_NOSUID
 #define	MS_NOSUID	VFS_NOSUID
 #endif
+#ifndef MS_REMOUNT
+#define	MS_REMOUNT	0x0020
+#endif
+#ifndef MS_OVERLAY
+#define	MS_OVERLAY	0x0080
+#endif
+#ifndef MS_DATA
+#define	MS_DATA		0x0040
+#endif
 
 #endif	/* _SPL_SYS_MOUNT_H */

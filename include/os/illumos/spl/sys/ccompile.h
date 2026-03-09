@@ -227,6 +227,25 @@ typedef int fstrans_cookie_t;
 #endif
 
 /*
+ * TXG_WAIT — illumos-joyent uses TXG_WAIT for dmu_tx_assign();
+ * OpenZFS replaced it with just 0 (TXG_WAIT_NONE).
+ */
+#ifndef TXG_WAIT
+#define	TXG_WAIT	0
+#endif
+
+/*
+ * MS_SYSSPACE / MS_NOMNTTAB — mount flags used by illumos.
+ * Map to VFS equivalents.
+ */
+#ifndef MS_SYSSPACE
+#define	MS_SYSSPACE	0
+#endif
+#ifndef MS_NOMNTTAB
+#define	MS_NOMNTTAB	0
+#endif
+
+/*
  * Linux ioctl encoding macros — not available on illumos.
  * Provide stubs so shared headers can define Linux-specific ioctls
  * without #ifdefs.

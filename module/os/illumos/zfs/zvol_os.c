@@ -24,9 +24,13 @@
  * Copyright (c) 2012, 2017 by Delphix. All rights reserved.
  * Copyright (c) 2025, OpenZFS on illumos.
  *
- * ZFS volume (zvol) emulation driver for illumos.
- * Stubs for now -- the full zvol block device implementation
- * will be ported from the illumos-joyent zvol.c.
+ * ZFS volume (zvol) OS-specific routines for illumos.
+ *
+ * These are stubs: zvol_os_create_minor() returns ENOTSUP because the
+ * full illumos zvol block-device driver (minor node creation, DKIOC
+ * ioctls, strategy entry point, etc.) has not yet been ported.  Since
+ * create_minor fails, no zvol_state_t will ever be allocated, so the
+ * remaining functions are safe no-ops.
  */
 
 #include <sys/types.h>
@@ -45,13 +49,48 @@
 #include <sys/zvol_impl.h>
 #include <sys/sunddi.h>
 
+/*
+ * Free a zvol_state_t and all associated resources.
+ *
+ * This is the platform-specific counterpart to the common zvol teardown.
+ * On illumos, zvol_os_create_minor() currently returns ENOTSUP, so this
+ * should never be called.  When zvols are fully wired up, this will need
+ * to destroy the DDI minor node and any platform-specific state in zv_zso.
+ */
 void
 zvol_os_free(zvol_state_t *zv)
 {
-	(void) zv;
-	/* TODO: free illumos-specific zvol state */
+	ASSERT(!RW_LOCK_HELD(&zv->zv_suspend_lock));
+	ASSERT(!MUTEX_HELD(&zv->zv_state_lock));
+	ASSERT0(zv->zv_open_count);
+
+	rw_destroy(&zv->zv_suspend_lock);
+	zfs_rangelock_fini(&zv->zv_rangelock);
+
+	cv_destroy(&zv->zv_removing_cv);
+	mutex_destroy(&zv->zv_state_lock);
+	dataset_kstats_destroy(&zv->zv_kstat);
+
+	kmem_free(zv, sizeof (zvol_state_t));
 }
 
+/*
+ * Create a minor node for the specified volume.
+ *
+ * Not yet implemented on illumos.  This is the main entry point that
+ * needs DDI minor-node creation, zvol soft-state allocation, and
+ * registration of the block/char device.
+ */
+int
+zvol_os_create_minor(const char *name)
+{
+	(void) name;
+	return (SET_ERROR(ENOTSUP));
+}
+
+/*
+ * Rename a zvol minor node.
+ */
 int
 zvol_os_rename_minor(zvol_state_t *zv, const char *newname)
 {
@@ -60,13 +99,9 @@ zvol_os_rename_minor(zvol_state_t *zv, const char *newname)
 	return (SET_ERROR(ENOTSUP));
 }
 
-int
-zvol_os_create_minor(const char *name)
-{
-	(void) name;
-	return (SET_ERROR(ENOTSUP));
-}
-
+/*
+ * Update the volume size after a "zfs set volsize" operation.
+ */
 int
 zvol_os_update_volsize(zvol_state_t *zv, uint64_t volsize)
 {
@@ -75,6 +110,13 @@ zvol_os_update_volsize(zvol_state_t *zv, uint64_t volsize)
 	return (SET_ERROR(ENOTSUP));
 }
 
+/*
+ * Check whether a given path refers to a zvol device.
+ *
+ * On illumos, zvol device paths live under /dev/zvol/dsk and
+ * /dev/zvol/rdsk.  Since zvols are not yet supported, always
+ * return B_FALSE.
+ */
 boolean_t
 zvol_os_is_zvol(const char *path)
 {
@@ -82,12 +124,18 @@ zvol_os_is_zvol(const char *path)
 	return (B_FALSE);
 }
 
+/*
+ * Remove a zvol minor node.
+ */
 void
 zvol_os_remove_minor(zvol_state_t *zv)
 {
 	(void) zv;
 }
 
+/*
+ * Set a zvol device to read-only mode.
+ */
 void
 zvol_os_set_disk_ro(zvol_state_t *zv, int flags)
 {
@@ -95,6 +143,9 @@ zvol_os_set_disk_ro(zvol_state_t *zv, int flags)
 	(void) flags;
 }
 
+/*
+ * Notify the OS that the zvol capacity has changed.
+ */
 void
 zvol_os_set_capacity(zvol_state_t *zv, uint64_t capacity)
 {
