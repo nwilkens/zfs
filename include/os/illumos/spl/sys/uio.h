@@ -32,6 +32,11 @@
  */
 #include_next <sys/uio.h>
 
+/* Forward-declare memset for inline functions below */
+#if defined(_KERNEL) && !defined(_STRING_H)
+extern void *memset(void *, int, size_t);
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
