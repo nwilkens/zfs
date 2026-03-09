@@ -186,7 +186,7 @@ ICP_C_SRCS = \
 	aes.c aes_impl.c aes_impl_aesni.c aes_impl_generic.c \
 	aes_impl_x86-64.c aes_modes.c aeskey.c \
 	blake3.c blake3_generic.c blake3_impl.c \
-	ccm.c edonr.c gcm.c gcm_generic.c gcm_pclmulqdq.c \
+	ccm.c edonr.c gcm.c gcm_generic.c \
 	kcf_callprov.c kcf_cipher.c kcf_ctxops.c kcf_mac.c \
 	kcf_mech_tabs.c kcf_prov_lib.c kcf_prov_tabs.c kcf_sched.c \
 	kcf_spi.c modes.c \
@@ -324,4 +324,7 @@ $(OBJDIR)/zfs_fletcher_sse.o: CFLAGS += -msse2
 # ICP crypto needs ISA flags for hardware acceleration
 $(OBJDIR)/aes_impl_aesni.o: CFLAGS += -maes
 $(OBJDIR)/aes_impl_x86-64.o: CFLAGS += -maes
-$(OBJDIR)/gcm_pclmulqdq.o: CFLAGS += -mpclmul
+# gcm_pclmulqdq has both .c and .S versions. Force the ASM version
+# which provides gcm_mul_pclmulqdq. Use explicit rule to override vpath.
+$(OBJDIR)/gcm_pclmulqdq.o: $(SRCDIR)/icp/asm-x86_64/modes/gcm_pclmulqdq.S | $(OBJDIR)
+	$(CC) $(CFLAGS) -D_ASM -mpclmul -c -o $@ $<

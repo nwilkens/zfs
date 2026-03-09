@@ -246,6 +246,40 @@ typedef int fstrans_cookie_t;
 #endif
 
 /*
+ * PANIC — OpenZFS uses PANIC() instead of panic().
+ */
+#ifndef PANIC
+#define	PANIC(fmt, ...)		panic(fmt, ##__VA_ARGS__)
+#endif
+
+/*
+ * vn_flush_cached_data — flush cached pages from a vnode.
+ * On illumos, use pvn_vplist_dirty with B_INVAL flag.
+ */
+#ifndef vn_flush_cached_data
+#define	vn_flush_cached_data(vp, sync)	\
+	((vn_has_cached_data(vp)) ? \
+	pvn_vplist_dirty((vp), 0, NULL, B_INVAL | B_TRUNC, CRED()) : (void)0)
+#endif
+
+/*
+ * ctype kernel functions — used by Lua.
+ * illumos kernel has ISALPHA etc. macros but not the POSIX function names.
+ */
+#if defined(_KERNEL)
+#ifndef iscntrl
+#define	iscntrl(c)	(((c) >= 0 && (c) <= 0x1f) || (c) == 0x7f)
+#endif
+#ifndef isgraph
+#define	isgraph(c)	((c) > 0x20 && (c) < 0x7f)
+#endif
+#ifndef ispunct
+#define	ispunct(c)	(isgraph(c) && !((c) >= 'A' && (c) <= 'Z') && \
+	!((c) >= 'a' && (c) <= 'z') && !((c) >= '0' && (c) <= '9'))
+#endif
+#endif
+
+/*
  * Linux ioctl encoding macros — not available on illumos.
  * Provide stubs so shared headers can define Linux-specific ioctls
  * without #ifdefs.

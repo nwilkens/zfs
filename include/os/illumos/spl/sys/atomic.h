@@ -39,17 +39,38 @@
  * atomic_load_64 — atomic 64-bit load.
  * Not native on illumos; used by OpenZFS refcount code.
  */
+#ifndef atomic_load_32
+static inline uint32_t
+atomic_load_32(volatile uint32_t *target)
+{
+	return (__atomic_load_n(target, __ATOMIC_RELAXED));
+}
+#endif
+
 #ifndef atomic_load_64
 static inline uint64_t
 atomic_load_64(volatile uint64_t *target)
 {
-	return (*target);
+	return (__atomic_load_n(target, __ATOMIC_RELAXED));
 }
 #endif
 
-/*
- * atomic_load_ptr — atomic pointer load.
- */
+#ifndef atomic_store_64
+static inline void
+atomic_store_64(volatile uint64_t *target, uint64_t val)
+{
+	__atomic_store_n(target, val, __ATOMIC_RELAXED);
+}
+#endif
+
+#ifndef atomic_sub_64
+static inline void
+atomic_sub_64(volatile uint64_t *target, int64_t delta)
+{
+	(void) atomic_add_64_nv(target, -delta);
+}
+#endif
+
 static inline void *
 atomic_load_ptr(volatile void *target)
 {
