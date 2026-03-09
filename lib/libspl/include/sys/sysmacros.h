@@ -32,12 +32,11 @@
 #include <stdint.h>
 #include <limits.h>
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__illumos__)
 /*
- * On Linux, we need the system-provided sysmacros.h to get the makedev(),
- * major() and minor() definitions for makedevice() below. FreeBSD does not
- * have this header, so include_next won't find it and will abort. So, we
- * protect it with a platform check.
+ * On Linux and illumos, we need the system-provided sysmacros.h to get the
+ * makedev(), major() and minor() definitions for makedevice() below.
+ * FreeBSD does not have this header.
  */
 #include_next <sys/sysmacros.h>
 #endif

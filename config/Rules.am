@@ -32,6 +32,12 @@ AM_CFLAGS += -include $(top_srcdir)/include/os/freebsd/spl/sys/ccompile.h
 AM_CFLAGS += -I/usr/include -I/usr/local/include
 endif
 
+if BUILD_ILLUMOS
+AM_CFLAGS += -fPIC
+AM_CFLAGS += -include $(top_srcdir)/include/os/illumos/spl/sys/ccompile.h
+AM_CPPFLAGS += -D__EXTENSIONS__
+endif
+
 AM_CPPFLAGS += -D_GNU_SOURCE
 AM_CPPFLAGS += -D_REENTRANT
 AM_CPPFLAGS += -D_FILE_OFFSET_BITS=64

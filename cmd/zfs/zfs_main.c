@@ -8992,8 +8992,10 @@ zfs_rewrite_dir(const char *path, boolean_t verbose, boolean_t xdev, dev_t dev,
 		char *fullname;
 		struct stat st;
 
+#ifdef _DIRENT_HAVE_D_TYPE
 		if (ent->d_type != DT_REG && ent->d_type != DT_DIR)
 			continue;
+#endif
 
 		if (strcmp(ent->d_name, ".") == 0 ||
 		    strcmp(ent->d_name, "..") == 0)
@@ -9013,7 +9015,23 @@ zfs_rewrite_dir(const char *path, boolean_t verbose, boolean_t xdev, dev_t dev,
 			continue;
 		}
 
+#ifndef _DIRENT_HAVE_D_TYPE
+		if (lstat(fullname, &st) < 0) {
+			ret = errno;
+			(void) fprintf(stderr,
+			    gettext("failed to stat %s: %s\n"),
+			    fullname, strerror(errno));
+			free(fullname);
+			continue;
+		}
+		if (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode)) {
+			free(fullname);
+			continue;
+		}
+#endif
+
 		if (xdev) {
+#ifdef _DIRENT_HAVE_D_TYPE
 			if (lstat(fullname, &st) < 0) {
 				ret = errno;
 				(void) fprintf(stderr,
@@ -9022,13 +9040,18 @@ zfs_rewrite_dir(const char *path, boolean_t verbose, boolean_t xdev, dev_t dev,
 				free(fullname);
 				continue;
 			}
+#endif
 			if (st.st_dev != dev) {
 				free(fullname);
 				continue;
 			}
 		}
 
+#ifdef _DIRENT_HAVE_D_TYPE
 		if (ent->d_type == DT_REG) {
+#else
+		if (S_ISREG(st.st_mode)) {
+#endif
 			err = zfs_rewrite_file(fullname, verbose, args);
 			if (err)
 				ret = err;

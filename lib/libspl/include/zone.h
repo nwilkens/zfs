@@ -34,8 +34,11 @@
 extern "C" {
 #endif
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__illumos__)
+/* FreeBSD and illumos define GLOBAL_ZONEID natively (as 0) */
+#ifndef GLOBAL_ZONEID
 #define	GLOBAL_ZONEID	0
+#endif
 #else
 /*
  * Hardcoded in the kernel's root user namespace.  A "better" way to get

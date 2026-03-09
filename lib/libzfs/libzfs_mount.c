@@ -166,6 +166,18 @@ dir_is_empty_readdir(const char *dirname)
 static boolean_t
 dir_is_empty(const char *dirname)
 {
+#ifdef __illumos__
+	struct statvfs64 st;
+
+	/*
+	 * If the statvfs call fails or the filesystem is not a ZFS
+	 * filesystem, fall back to the slow path which uses readdir.
+	 */
+	if ((statvfs64(dirname, &st) != 0) ||
+	    (strcmp(st.f_basetype, "zfs") != 0)) {
+		return (dir_is_empty_readdir(dirname));
+	}
+#else
 	struct statfs64 st;
 
 	/*
@@ -176,6 +188,7 @@ dir_is_empty(const char *dirname)
 	    (st.f_type != ZFS_SUPER_MAGIC)) {
 		return (dir_is_empty_readdir(dirname));
 	}
+#endif
 
 	/*
 	 * At this point, we know the provided path is on a ZFS

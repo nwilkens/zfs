@@ -76,6 +76,40 @@
 #define	SEC2NSEC(m)	((hrtime_t)(m) * (NANOSEC / SEC))
 #endif
 
+#ifdef __illumos__
+/*
+ * On illumos, hrtime_t, timespec_t, gethrtime(), etc. are all native.
+ * Only provide inode_timespec_t and gethrestime/gethrestime_sec/getlrtime
+ * which are OpenZFS additions.
+ */
+typedef struct timespec		inode_timespec_t;
+
+static inline void
+gethrestime(inode_timespec_t *ts)
+{
+	struct timeval tv;
+	(void) gettimeofday(&tv, NULL);
+	ts->tv_sec = tv.tv_sec;
+	ts->tv_nsec = tv.tv_usec * NSEC_PER_USEC;
+}
+
+static inline uint64_t
+gethrestime_sec(void)
+{
+	struct timeval tv;
+	(void) gettimeofday(&tv, NULL);
+	return (tv.tv_sec);
+}
+
+static inline hrtime_t
+getlrtime(void)
+{
+	struct timeval tv;
+	(void) gettimeofday(&tv, NULL);
+	return ((((uint64_t)tv.tv_sec) * NANOSEC) +
+	    ((uint64_t)tv.tv_usec * NSEC_PER_USEC));
+}
+#else
 typedef	long long		hrtime_t;
 typedef	struct timespec		timespec_t;
 typedef struct timespec		inode_timespec_t;
@@ -113,5 +147,6 @@ gethrtime(void)
 	(void) clock_gettime(CLOCK_MONOTONIC, &ts);
 	return ((((uint64_t)ts.tv_sec) * NANOSEC) + ts.tv_nsec);
 }
+#endif /* __illumos__ */
 
 #endif /* _LIBSPL_SYS_TIME_H */

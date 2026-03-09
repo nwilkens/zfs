@@ -43,6 +43,20 @@
 
 #include <sys/sysmacros.h>
 #include <sys/types.h>
+
+#ifdef __illumos__
+/*
+ * On illumos, include the system <sys/uio.h> which provides struct iovec,
+ * iovec_t, uio_rw (UIO_READ/UIO_WRITE), and uio_seg.
+ */
+#include_next <sys/uio.h>
+#include <stdint.h>
+
+typedef enum uio_rw zfs_uio_rw_t;
+typedef enum uio_seg zfs_uio_seg_t;
+
+#else /* !__illumos__ */
+
 #include_next <sys/uio.h>
 
 #ifdef __APPLE__
@@ -64,6 +78,20 @@ typedef enum zfs_uio_seg {
 
 #elif defined(__FreeBSD__)
 typedef enum uio_seg  zfs_uio_seg_t;
+#endif
+
+#endif /* __illumos__ */
+
+/*
+ * On illumos, the system <sys/uio.h> defines uio_loffset as a macro
+ * (uio_loffset -> _uio_offset._f).  Undefine it so we can use it as a
+ * field name in our own struct.
+ */
+#ifdef uio_loffset
+#undef uio_loffset
+#endif
+#ifdef uio_offset
+#undef uio_offset
 #endif
 
 typedef struct zfs_uio {

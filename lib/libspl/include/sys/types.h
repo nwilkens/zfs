@@ -45,8 +45,10 @@
 #include <inttypes.h>
 #endif /* HAVE_INTTYPES */
 
+#ifndef __illumos__
 typedef uint_t		zoneid_t;
 typedef int		projid_t;
+#endif
 
 #include <sys/param.h> /* for NBBY */
 

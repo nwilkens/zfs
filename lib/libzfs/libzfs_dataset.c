@@ -3192,15 +3192,25 @@ userquota_propname_decode(const char *propname, boolean_t zoned,
 
 	cp = strchr(propname, '@') + 1;
 
+#ifdef __illumos__
+	if (isuser &&
+	    (pw = getpwnam_r(cp, &gpwd, rpbuf, sizeof (rpbuf))) != NULL) {
+#else
 	if (isuser &&
 	    getpwnam_r(cp, &gpwd, rpbuf, sizeof (rpbuf), &pw) == 0 &&
 	    pw != NULL) {
+#endif
 		if (zoned && getzoneid() == GLOBAL_ZONEID)
 			return (ENOENT);
 		*ridp = pw->pw_uid;
+#ifdef __illumos__
+	} else if (isgroup &&
+	    (gr = getgrnam_r(cp, &ggrp, rpbuf, sizeof (rpbuf))) != NULL) {
+#else
 	} else if (isgroup &&
 	    getgrnam_r(cp, &ggrp, rpbuf, sizeof (rpbuf), &gr) == 0 &&
 	    gr != NULL) {
+#endif
 		if (zoned && getzoneid() == GLOBAL_ZONEID)
 			return (ENOENT);
 		*ridp = gr->gr_gid;

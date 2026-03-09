@@ -156,13 +156,18 @@ typedef struct utsname utsname_t;
 /*
  * fstrans_cookie_t — Linux file system transaction cookie.
  * No equivalent on illumos; stub it out.
+ *
+ * In userland, libspl provides these as function declarations,
+ * so only define the macros in kernel context.
  */
 #ifndef _FSTRANS_COOKIE_T
 #define	_FSTRANS_COOKIE_T
 typedef int fstrans_cookie_t;
+#if defined(_KERNEL) || defined(_STANDALONE)
 #define	spl_fstrans_mark()	(0)
 #define	spl_fstrans_unmark(x)	((void)(x))
 #define	spl_fstrans_check()	(0)
+#endif
 #endif
 
 /*
@@ -219,6 +224,24 @@ typedef int fstrans_cookie_t;
 #endif
 #ifndef RW_NOLOCKDEP
 #define	RW_NOLOCKDEP	0
+#endif
+
+/*
+ * Linux ioctl encoding macros — not available on illumos.
+ * Provide stubs so shared headers can define Linux-specific ioctls
+ * without #ifdefs.
+ */
+#ifndef _IOC
+#define	_IOC(a, b, c, d)	(((a) << 24) | ((b) << 8) | (c))
+#endif
+#ifndef _IOR
+#define	_IOR(g, n, t)		_IOC(0, (g), (n), sizeof (t))
+#endif
+#ifndef _IOW
+#define	_IOW(g, n, t)		_IOC(1, (g), (n), sizeof (t))
+#endif
+#ifndef _IOWR
+#define	_IOWR(g, n, t)		_IOC(2, (g), (n), sizeof (t))
 #endif
 
 #ifdef	__cplusplus

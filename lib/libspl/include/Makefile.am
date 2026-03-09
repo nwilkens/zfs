@@ -109,6 +109,16 @@ libspl_ia32_HEADERS = \
 	%D%/os/freebsd/sys/ia32/asm_linkage.h
 endif
 
+if BUILD_ILLUMOS
+libspl_sys_HEADERS += \
+	%D%/os/illumos/sys/byteorder.h \
+	%D%/os/illumos/sys/mnttab.h \
+	%D%/os/illumos/sys/mount.h \
+	%D%/os/illumos/sys/param.h \
+	%D%/os/illumos/sys/stat.h \
+	%D%/os/illumos/sys/vfs.h
+endif
+
 
 libspl_sys_dktpdir = $(libspl_sysdir)/dktp
 libspl_sys_dktp_HEADERS = \

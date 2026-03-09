@@ -25,8 +25,16 @@
  * Use is subject to license terms.
  */
 
-#ifndef	_SYS_ISA_DEFS_H
-#define	_SYS_ISA_DEFS_H
+/*
+ * On illumos, chain to the real system <sys/isa_defs.h> which defines
+ * _LP64, _CHAR_IS_SIGNED, endianness, etc.
+ */
+#ifdef __illumos__
+#include_next <sys/isa_defs.h>
+#endif
+
+#ifndef _LIBSPL_SYS_ISA_DEFS_H
+#define	_LIBSPL_SYS_ISA_DEFS_H
 
 #ifdef  __cplusplus
 extern "C" {
@@ -291,4 +299,4 @@ extern "C" {
 }
 #endif
 
-#endif	/* _SYS_ISA_DEFS_H */
+#endif	/* _LIBSPL_SYS_ISA_DEFS_H */

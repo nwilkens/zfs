@@ -77,6 +77,7 @@ extern "C" {
 #include <sys/zfs_context_os.h>
 #else /* _KERNEL || _STANDALONE */
 
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>

@@ -2009,7 +2009,11 @@ zpool_rewind_exclaim(libzfs_handle_t *hdl, const char *name, boolean_t dryrun,
 	(void) nvlist_lookup_int64(nv, ZPOOL_CONFIG_REWIND_TIME, &loss);
 
 	if (localtime_r((time_t *)&rewindto, &t) != NULL &&
+#ifdef __illumos__
+	    ctime_r((time_t *)&rewindto, timestr, sizeof (timestr)) != NULL) {
+#else
 	    ctime_r((time_t *)&rewindto, timestr) != NULL) {
+#endif
 		timestr[24] = 0;
 		if (dryrun) {
 			(void) printf(dgettext(TEXT_DOMAIN,
@@ -2067,7 +2071,11 @@ zpool_explain_recover(libzfs_handle_t *hdl, const char *name, int reason,
 	    "Recovery is possible, but will result in some data loss.\n"));
 
 	if (localtime_r((time_t *)&rewindto, &t) != NULL &&
+#ifdef __illumos__
+	    ctime_r((time_t *)&rewindto, timestr, sizeof (timestr)) != NULL) {
+#else
 	    ctime_r((time_t *)&rewindto, timestr) != NULL) {
+#endif
 		timestr[24] = 0;
 		(void) snprintf(temp, 1024, dgettext(TEXT_DOMAIN,
 		    "\tReturning the pool to its state as of %s\n"

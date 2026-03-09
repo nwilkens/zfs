@@ -44,18 +44,20 @@ libspl_physmem(void)
 	return (hw_physmem);
 }
 
+#ifndef __illumos__
 utsname_t *
 utsname(void)
 {
 	return (&hw_utsname);
 }
+#endif
 
 void
 libspl_init(void)
 {
 	hw_physmem = sysconf(_SC_PHYS_PAGES);
 
-	VERIFY0(uname(&hw_utsname));
+	VERIFY3S(uname(&hw_utsname), >=, 0);
 
 	random_init();
 }

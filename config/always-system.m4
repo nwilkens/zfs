@@ -17,6 +17,12 @@ AC_DEFUN([ZFS_AC_CONFIG_ALWAYS_SYSTEM], [
 			ac_system="FreeBSD"
 			ac_system_l="freebsd"
 			;;
+		*solaris*|*illumos*)
+			AC_DEFINE([SYSTEM_ILLUMOS], [1],
+				[True if ZFS is to be compiled for an illumos system])
+			ac_system="illumos"
+			ac_system_l="illumos"
+			;;
 		*)
 			ac_system="unknown"
 			ac_system_l="unknown"
@@ -28,4 +34,5 @@ AC_DEFUN([ZFS_AC_CONFIG_ALWAYS_SYSTEM], [
 
 	AM_CONDITIONAL([BUILD_LINUX], [test "x$ac_system" = "xLinux"])
 	AM_CONDITIONAL([BUILD_FREEBSD], [test "x$ac_system" = "xFreeBSD"])
+	AM_CONDITIONAL([BUILD_ILLUMOS], [test "x$ac_system" = "xillumos"])
 ])

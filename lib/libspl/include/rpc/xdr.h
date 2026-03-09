@@ -41,13 +41,15 @@
 
 #define	XDR_GET_BYTES_AVAIL 1
 
-#ifndef HAVE_XDR_BYTESREC
+#if !defined(HAVE_XDR_BYTESREC) && !defined(__illumos__)
 struct xdr_bytesrec {
 	bool_t xc_is_last_record;
 	size_t xc_num_avail;
 };
-#endif
 typedef struct xdr_bytesrec  xdr_bytesrec_t;
+#else
+typedef struct xdr_bytesrec  xdr_bytesrec_t;
+#endif
 
 /*
  * This functionality is not required and is disabled in user space.

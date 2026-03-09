@@ -265,8 +265,16 @@ zfs_project_handle_dir(const char *name, zfs_project_control_t *zpc,
 		}
 
 		ret = zfs_project_handle_one(fullname, zpc);
-		if (!ret && zpc->zpc_recursive && ent->d_type == DT_DIR)
-			zfs_project_item_alloc(head, fullname);
+		if (!ret && zpc->zpc_recursive) {
+#ifdef _DIRENT_HAVE_D_TYPE
+			if (ent->d_type == DT_DIR)
+				zfs_project_item_alloc(head, fullname);
+#else
+			struct stat st;
+			if (lstat(fullname, &st) == 0 && S_ISDIR(st.st_mode))
+				zfs_project_item_alloc(head, fullname);
+#endif
+		}
 
 		free(fullname);
 	}

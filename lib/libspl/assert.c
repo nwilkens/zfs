@@ -28,6 +28,7 @@
  */
 
 #include <assert.h>
+#include <unistd.h>
 #include <pthread.h>
 #include <sys/backtrace.h>
 
@@ -51,6 +52,12 @@
 #define	libspl_getprogname()	getprogname()
 #define	libspl_getthreadname(buf, len)	\
 	pthread_getname_np(pthread_self(), buf, len);
+#elif defined(__illumos__)
+#include <thread.h>
+#define	libspl_gettid()		((pid_t)thr_self())
+#define	libspl_getprogname()	getexecname()
+#define	libspl_getthreadname(buf, len)	\
+	(pthread_getname_np(pthread_self(), buf, len))
 #endif
 
 #if defined(__APPLE__)

@@ -35,6 +35,26 @@
  * Hostname information
  */
 typedef struct utsname	utsname_t;
+#if defined(__illumos__)
+/*
+ * On illumos, 'utsname' is both a struct name and a global variable
+ * (in kernel), so we cannot redeclare it as a function.  Provide a
+ * static inline that returns a cached utsname struct.
+ */
+static inline utsname_t *
+spl_utsname(void)
+{
+	static utsname_t _spl_uts;
+	static int _spl_uts_init;
+	if (!_spl_uts_init) {
+		(void) uname(&_spl_uts);
+		_spl_uts_init = 1;
+	}
+	return (&_spl_uts);
+}
+#define	utsname()	spl_utsname()
+#else
 extern utsname_t *utsname(void);
+#endif
 
 #endif

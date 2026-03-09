@@ -57,6 +57,15 @@ libspl_la_SOURCES += \
 	%D%/os/freebsd/zone.c
 endif
 
+if BUILD_ILLUMOS
+libspl_la_SOURCES += \
+	%D%/os/illumos/getexecname.c \
+	%D%/os/illumos/gethostid.c \
+	%D%/os/illumos/getmntany.c \
+	%D%/os/illumos/mnttab.c \
+	%D%/os/illumos/zone.c
+endif
+
 libspl_la_LIBADD = \
 	libspl_assert.la
 
@@ -65,5 +74,9 @@ libspl_la_LIBADD += $(LIBATOMIC_LIBS) $(LIBCLOCK_GETTIME)
 libspl_assert_la_LIBADD = $(BACKTRACE_LIBS) $(LIBUNWIND_LIBS)
 
 if BUILD_FREEBSD
+libspl_assert_la_LIBADD += -lpthread
+endif
+
+if BUILD_ILLUMOS
 libspl_assert_la_LIBADD += -lpthread
 endif

@@ -46,8 +46,6 @@ nodist_libzpool_la_SOURCES = \
 	module/lua/lvm.c \
 	module/lua/lzio.c \
 	\
-	module/os/linux/zfs/zio_crypt.c \
-	\
 	module/zcommon/cityhash.c \
 	module/zcommon/simd_stat.c \
 	module/zcommon/zfeature_common.c \
@@ -203,6 +201,18 @@ nodist_libzpool_la_SOURCES = \
 nodist_libzpool_la_SOURCES += \
 	module/zfs/btree.c \
 	module/zfs/range_tree.c
+
+# zio_crypt.c is OS-specific; use the Linux/ICP version for all platforms
+# (it uses the portable ICP layer, not native kernel crypto)
+if BUILD_LINUX
+nodist_libzpool_la_SOURCES += module/os/linux/zfs/zio_crypt.c
+endif
+if BUILD_FREEBSD
+nodist_libzpool_la_SOURCES += module/os/linux/zfs/zio_crypt.c
+endif
+if BUILD_ILLUMOS
+nodist_libzpool_la_SOURCES += module/os/linux/zfs/zio_crypt.c
+endif
 
 libzpool_la_LIBADD = \
 	libicp.la \

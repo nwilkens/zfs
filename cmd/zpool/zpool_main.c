@@ -2736,7 +2736,11 @@ print_status_initialize(vdev_stat_t *vs, boolean_t verbose)
 				    100 / (vs->vs_initialize_bytes_est + 1));
 			}
 
+#ifdef __illumos__
+			(void) ctime_r(&t, tbuf, sizeof (tbuf));
+#else
 			(void) ctime_r(&t, tbuf);
+#endif
 			tbuf[24] = 0;
 
 			switch (vs->vs_initialize_state) {
@@ -2785,7 +2789,11 @@ print_status_trim(vdev_stat_t *vs, boolean_t verbose)
 				    100 / (vs->vs_trim_bytes_est + 1));
 			}
 
+#ifdef __illumos__
+			(void) ctime_r(&t, tbuf, sizeof (tbuf));
+#else
 			(void) ctime_r(&t, tbuf);
+#endif
 			tbuf[24] = 0;
 
 			switch (vs->vs_trim_state) {
@@ -12196,7 +12204,11 @@ zpool_do_events_short(nvlist_t *nvl, ev_opts_t *opts)
 
 	verify(nvlist_lookup_int64_array(nvl, FM_EREPORT_TIME, &tv, &n) == 0);
 	memset(str, ' ', 32);
+#ifdef __illumos__
+	(void) ctime_r((const time_t *)&tv[0], ctime_str, sizeof (ctime_str));
+#else
 	(void) ctime_r((const time_t *)&tv[0], ctime_str);
+#endif
 	(void) memcpy(str, ctime_str+4,  6);		/* 'Jun 30' */
 	(void) memcpy(str+7, ctime_str+20, 4);		/* '1993' */
 	(void) memcpy(str+12, ctime_str+11, 8);		/* '21:49:08' */

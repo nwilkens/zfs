@@ -12,7 +12,7 @@ AC_DEFUN([ZFS_AC_CONFIG_USER_LIBTIRPC], [
 	have_xdr=
 
         AS_IF([test "x$with_tirpc" != "xyes"], [
-	    AC_SEARCH_LIBS([xdrmem_create], [], [have_xdr=1], [
+	    AC_SEARCH_LIBS([xdrmem_create], [nsl], [have_xdr=1], [
 		AS_IF([test "x$with_tirpc" = "xno"], [
 		    AC_MSG_FAILURE([xdrmem_create() requires sunrpc support in libc if not using libtirpc])
 		])

@@ -12,12 +12,6 @@
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
- * When distributing Covered Code, include this CDDL HEADER in each
- * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
- * If applicable, add the following below this CDDL HEADER, with the
- * fields enclosed by brackets "[]" replaced with your own identifying
- * information: Portions Copyright [yyyy] [name of copyright owner]
- *
  * CDDL HEADER END
  */
 /*
@@ -25,8 +19,16 @@
  * Use is subject to license terms.
  */
 
-#ifndef _SYS_FEATURE_TESTS_H
-#define	_SYS_FEATURE_TESTS_H
+/*
+ * On illumos, chain to the real system <sys/feature_tests.h> which defines
+ * critical macros like _RESTRICT_KYWD, _STDC_C99, etc.
+ */
+#ifdef __illumos__
+#include_next <sys/feature_tests.h>
+#endif
+
+#ifndef _LIBSPL_SYS_FEATURE_TESTS_H
+#define	_LIBSPL_SYS_FEATURE_TESTS_H
 
 #define	____cacheline_aligned
 

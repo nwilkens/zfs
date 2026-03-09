@@ -25,10 +25,16 @@
  * Use is subject to license terms.
  */
 
+#ifdef __illumos__
+#include_next <sys/inttypes.h>
+#endif
+
 #ifndef _SOL_SYS_INTTYPES_H
 #define	_SOL_SYS_INTTYPES_H
 
+#ifndef __illumos__
 #include <inttypes.h>
+#endif
 
 #define	_INT64_TYPE
 

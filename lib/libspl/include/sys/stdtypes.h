@@ -24,6 +24,10 @@
 #ifndef	__SYS_STDTYPES_H
 #define	__SYS_STDTYPES_H
 
+/*
+ * On illumos, all these types are provided natively by <sys/types.h>.
+ */
+#ifndef __illumos__
 typedef enum {
 	B_FALSE = 0,
 	B_TRUE = 1
@@ -51,5 +55,6 @@ typedef int			major_t;
 typedef int			minor_t;
 
 typedef short			index_t;
+#endif	/* !__illumos__ */
 
 #endif	/* __SYS_STDTYPES_H */

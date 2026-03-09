@@ -27,6 +27,13 @@ nodist_libzfs_core_la_SOURCES = \
 	module/os/freebsd/zfs/zfs_ioctl_compat.c
 endif
 
+if BUILD_ILLUMOS
+libzfs_core_la_CPPFLAGS += -Iinclude/os/illumos/zfs
+
+libzfs_core_la_SOURCES += \
+	%D%/os/illumos/libzfs_core_ioctl.c
+endif
+
 libzfs_core_la_LIBADD = \
 	libnvpair.la \
 	libspl.la
