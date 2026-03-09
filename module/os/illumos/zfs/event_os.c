@@ -26,3 +26,45 @@
  * illumos uses native sysevents via ddi_sysevent; no OS-specific
  * event plumbing is needed here.
  */
+
+/*
+ * ZSTD trace hooks.  These are declared with __weak__ in the ZSTD library
+ * but the weak attribute doesn't work reliably in kernel modules.
+ * Provide no-op implementations.
+ */
+typedef unsigned long long ZSTD_TraceCtx;
+struct ZSTD_CCtx_s;
+struct ZSTD_DCtx_s;
+
+ZSTD_TraceCtx
+ZSTD_trace_compress_begin(struct ZSTD_CCtx_s const *cctx)
+{
+	(void) cctx;
+	return (0);
+}
+
+void
+ZSTD_trace_compress_end(struct ZSTD_CCtx_s const *cctx, ZSTD_TraceCtx ctx,
+    unsigned long long size)
+{
+	(void) cctx;
+	(void) ctx;
+	(void) size;
+}
+
+ZSTD_TraceCtx
+ZSTD_trace_decompress_begin(struct ZSTD_DCtx_s const *dctx)
+{
+	(void) dctx;
+	return (0);
+}
+
+void
+ZSTD_trace_decompress_end(struct ZSTD_DCtx_s const *dctx, ZSTD_TraceCtx ctx,
+    unsigned long long size, int errorCode)
+{
+	(void) dctx;
+	(void) ctx;
+	(void) size;
+	(void) errorCode;
+}

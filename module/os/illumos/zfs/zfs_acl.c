@@ -61,6 +61,11 @@
 #include <sys/sa.h>
 #include "fs/fs_subr.h"
 #include <acl/acl_common.h>
+
+/* Forward declarations for illumos-specific ACL helpers defined below. */
+static boolean_t zfs_fuid_is_cruser(zfsvfs_t *, uint64_t, cred_t *);
+static boolean_t zfs_user_in_cred(zfsvfs_t *, uint64_t, cred_t *);
+
 #define	ALLOW	ACE_ACCESS_ALLOWED_ACE_TYPE
 #define	DENY	ACE_ACCESS_DENIED_ACE_TYPE
 #define	MAX_ACE_TYPE	ACE_SYSTEM_ALARM_CALLBACK_OBJECT_ACE_TYPE
@@ -2904,4 +2909,31 @@ zfs_zaccess_rename(znode_t *sdzp, znode_t *szp, znode_t *tdzp,
 	error = zfs_zaccess(tdzp, add_perm, 0, B_FALSE, cr, NULL);
 
 	return (error);
+}
+
+/*
+ * Check if a given user ID (possibly an FUID) matches the credential's
+ * uid.  This avoids an expensive kidmap upcall when the FUID is a
+ * simple POSIX uid that can be compared directly.
+ */
+static boolean_t
+zfs_fuid_is_cruser(zfsvfs_t *zfsvfs, uint64_t uid, cred_t *cr)
+{
+	if (IS_EPHEMERAL(uid))
+		return (zfs_fuid_map_id(zfsvfs, uid, cr, ZFS_OWNER) ==
+		    crgetuid(cr));
+	return ((uid_t)uid == crgetuid(cr));
+}
+
+/*
+ * Check if a given user ID (possibly an FUID) matches the credential's
+ * uid.  Used in the ACE_OWNER / USER entry type check during ACL walks.
+ */
+static boolean_t
+zfs_user_in_cred(zfsvfs_t *zfsvfs, uint64_t who, cred_t *cr)
+{
+	if (IS_EPHEMERAL(who))
+		return (zfs_fuid_map_id(zfsvfs, who, cr, ZFS_OWNER) ==
+		    crgetuid(cr));
+	return ((uid_t)who == crgetuid(cr));
 }

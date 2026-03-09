@@ -1196,3 +1196,53 @@ zfs_sticky_remove_access(znode_t *zdp, znode_t *zp, cred_t *cr)
 	else
 		return (secpolicy_vnode_remove(cr));
 }
+
+/*
+ * zfs_dirent_lookup - simplified directory entry lookup.
+ *
+ * This is the illumos equivalent of the FreeBSD/Linux zfs_dirent_lookup().
+ * It wraps the illumos zfs_dirent_lock()/zfs_dirent_unlock() pair into
+ * a single lookup call that does not hold the dirlock on return.
+ *
+ * Input arguments:
+ *	dzp	- znode for directory
+ *	name	- name of entry to look up
+ *	zpp	- pointer to return the znode (may be NULL if not needed)
+ *	flag	- ZNEW, ZEXISTS, or ZXATTR
+ *
+ * Return value: 0 on success or errno on failure.
+ */
+int
+zfs_dirent_lookup(znode_t *dzp, const char *name, znode_t **zpp, int flag)
+{
+	zfs_dirlock_t *dl;
+	znode_t *zp = NULL;
+	int error;
+
+	error = zfs_dirent_lock(&dl, dzp, (char *)name, &zp, flag, NULL, NULL);
+	if (error == 0) {
+		zfs_dirent_unlock(dl);
+		if (zpp != NULL)
+			*zpp = zp;
+		else if (zp != NULL)
+			VN_RELE(ZTOV(zp));
+	} else {
+		if (zpp != NULL)
+			*zpp = NULL;
+	}
+	return (error);
+}
+
+/*
+ * zfs_lookup_lock - look up ".." and return with the parent vnode held.
+ *
+ * On illumos, ".." lookup is done via zfs_dirlook which already handles
+ * the special ".." case.  This thin wrapper provides the zfs_lookup_lock()
+ * API expected by zfs_vnops_os.c.
+ */
+int
+zfs_lookup_lock(znode_t *zdp, char *nm, vnode_t **vpp, int flag)
+{
+	(void) flag;
+	return (zfs_dirlook(zdp, nm, vpp, 0, NULL, NULL));
+}

@@ -543,3 +543,18 @@ abd_return_buf_copy(abd_t *abd, void *buf, size_t n)
 	}
 	abd_return_buf(abd, buf, n);
 }
+
+/*
+ * Allocate an ABD from a set of kernel pages.  This is used by the
+ * Direct I/O (DIO) path on Linux; illumos does not support DIO in
+ * ZFS so this is a stub that panics if called.
+ */
+abd_t *
+abd_alloc_from_pages(page_t **pages, unsigned long offset, uint64_t size)
+{
+	(void) pages;
+	(void) offset;
+	(void) size;
+	panic("abd_alloc_from_pages: not supported on illumos");
+	return (NULL);
+}

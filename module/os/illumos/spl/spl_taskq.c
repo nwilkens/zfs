@@ -180,3 +180,34 @@ spl_taskq_fini(void)
 		system_delay_taskq = NULL;
 	}
 }
+
+/*
+ * OpenZFS taskq extensions not present in native illumos taskq.
+ */
+int
+taskq_cancel_id(taskq_t *tq, taskqid_t id)
+{
+	(void) tq;
+	(void) id;
+	return (ENOENT);
+}
+
+void
+taskq_empty_ent(taskq_ent_t *t)
+{
+	(void) t;
+}
+
+boolean_t
+taskq_of_curthread(taskq_t *tq)
+{
+	(void) tq;
+	return (taskq_member(tq, curthread));
+}
+
+void
+taskq_wait_outstanding(taskq_t *tq, taskqid_t id)
+{
+	(void) id;
+	taskq_wait(tq);
+}

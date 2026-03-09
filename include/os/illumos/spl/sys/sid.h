@@ -30,7 +30,13 @@
 /*
  * Windows Security Identifier (SID) types for ZFS ACL/SMB support.
  * illumos defines these natively in <sys/sid.h>.
+ *
+ * Also pull in <sys/kidmap.h> for idmap_stat and kidmap_* functions
+ * needed by the FUID code when HAVE_KSID is defined.
  */
 #include_next <sys/sid.h>
+#ifdef _KERNEL
+#include <sys/kidmap.h>
+#endif
 
 #endif	/* _SPL_SYS_SID_H */

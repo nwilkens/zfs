@@ -55,7 +55,16 @@ KDEFS		= -D_KERNEL -D__KERNEL__
 KDEFS		+= -D_SYSCALL32 -D_SYSCALL32_IMPL -D_ELF64 -D_DDI_STRICT
 KDEFS		+= -Dsun -D__sun -D__SVR4 -D__illumos__
 KDEFS		+= -DBUILDING_ZFS -DHAVE_CONFIG_H
+KDEFS		+= -DHAVE_KSID
 KDEFS		+= -DTEXT_DOMAIN=\"zfs-illumos-kernel\"
+# SIMD feature flags — illumos x86_64 kernels support these ISA extensions.
+# The HAVE_KERNEL_* defines tell OpenZFS that the kernel can use them.
+KDEFS		+= -DHAVE_KERNEL_SSE2 -DHAVE_KERNEL_SSSE3
+KDEFS		+= -DHAVE_KERNEL_SSE4_1 -DHAVE_KERNEL_AVX
+KDEFS		+= -DHAVE_KERNEL_AVX2 -DHAVE_KERNEL_AVX512F
+KDEFS		+= -DHAVE_KERNEL_AVX512BW -DHAVE_KERNEL_AVX512VL
+KDEFS		+= -DHAVE_KERNEL_AES -DHAVE_KERNEL_PCLMULQDQ
+KDEFS		+= -DHAVE_KERNEL_MOVBE -DHAVE_KERNEL_FMA
 
 #
 # Include paths — order matters for #include_next chaining
@@ -275,30 +284,32 @@ clean:
 #
 # Per-file overrides
 #
-# ZSTD needs extra flags
-$(OBJDIR)/zfs_zstd.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/entropy_common.o: CFLAGS += -I$(SRCDIR)/zstd/include -Wno-implicit-fallthrough
-$(OBJDIR)/error_private.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/fse_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include -Wno-implicit-fallthrough
-$(OBJDIR)/pool.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_common.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/fse_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include -Wno-implicit-fallthrough
-$(OBJDIR)/hist.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/huf_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/huf_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_compress_literals.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_compress_sequences.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_compress_superblock.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_double_fast.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_fast.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_lazy.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_ldm.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_opt.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_preSplit.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_ddict.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include
-$(OBJDIR)/zstd_decompress_block.o: CFLAGS += -I$(SRCDIR)/zstd/include
+# ZSTD needs extra flags.  The compat wrapper renames all public symbols
+# with a zfs_ prefix to avoid collisions with an in-kernel zstd.
+ZSTD_COMPAT = -include $(SRCDIR)/zstd/include/zstd_compat_wrapper.h
+$(OBJDIR)/zfs_zstd.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/entropy_common.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT) -Wno-implicit-fallthrough
+$(OBJDIR)/error_private.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/fse_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT) -Wno-implicit-fallthrough
+$(OBJDIR)/pool.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_common.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/fse_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT) -Wno-implicit-fallthrough
+$(OBJDIR)/hist.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/huf_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/huf_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_compress.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_compress_literals.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_compress_sequences.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_compress_superblock.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_double_fast.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_fast.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_lazy.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_ldm.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_opt.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_preSplit.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_ddict.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_decompress.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
+$(OBJDIR)/zstd_decompress_block.o: CFLAGS += -I$(SRCDIR)/zstd/include $(ZSTD_COMPAT)
 
 # AVX2/AVX512 files need specific ISA flags
 $(OBJDIR)/vdev_raidz_math_avx2.o: CFLAGS += -mavx2

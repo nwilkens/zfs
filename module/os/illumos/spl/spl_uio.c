@@ -131,3 +131,24 @@ zfs_uio_page_aligned(zfs_uio_t *uio)
 
 	return (B_TRUE);
 }
+
+/*
+ * Direct I/O page management stubs.
+ *
+ * Direct I/O (DIO) is a Linux-specific feature that pins user pages
+ * directly.  illumos ZFS does not support DIO, so these are stubs.
+ */
+void
+zfs_uio_free_dio_pages(zfs_uio_t *uio, zfs_uio_rw_t rw)
+{
+	(void) uio;
+	(void) rw;
+}
+
+int
+zfs_uio_get_dio_pages_alloc(zfs_uio_t *uio, zfs_uio_rw_t rw)
+{
+	(void) uio;
+	(void) rw;
+	return (SET_ERROR(ENOTSUP));
+}

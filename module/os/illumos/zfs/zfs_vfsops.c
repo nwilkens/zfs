@@ -72,6 +72,22 @@
 #include <sys/dataset_kstats.h>
 
 #include "zfs_comutil.h"
+#include <sys/txg.h>
+
+/*
+ * Check if a dataset has outstanding dirty data in any txg.
+ * This is used during unmount to decide whether to wait for sync.
+ */
+static boolean_t
+dsl_dataset_is_dirty(dsl_dataset_t *ds)
+{
+	for (int t = 0; t < TXG_SIZE; t++) {
+		if (txg_list_member(&ds->ds_dir->dd_pool->dp_dirty_datasets,
+		    ds, t))
+			return (B_TRUE);
+	}
+	return (B_FALSE);
+}
 
 /*
  * Minimum minor number for ZFS device nodes.  On illumos the ZFS driver

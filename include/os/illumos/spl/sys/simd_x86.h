@@ -182,4 +182,45 @@ zfs_avx512vbmi_available(void)
 	    is_x86_feature(x86_featureset, X86FSET_AVX512VBMI));
 }
 
+static inline boolean_t
+zfs_aes_available(void)
+{
+	return (is_x86_feature(x86_featureset, X86FSET_AES));
+}
+
+static inline boolean_t
+zfs_pclmulqdq_available(void)
+{
+	return (is_x86_feature(x86_featureset, X86FSET_PCLMULQDQ));
+}
+
+static inline boolean_t
+zfs_movbe_available(void)
+{
+	/*
+	 * illumos does not track MOVBE in x86_featureset.
+	 * Return B_FALSE conservatively; the GCM code has
+	 * a non-MOVBE fallback path.
+	 */
+	return (B_FALSE);
+}
+
+static inline boolean_t
+zfs_vaes_available(void)
+{
+	return (is_x86_feature(x86_featureset, X86FSET_VAES));
+}
+
+static inline boolean_t
+zfs_vpclmulqdq_available(void)
+{
+	return (is_x86_feature(x86_featureset, X86FSET_VPCLMULQDQ));
+}
+
+static inline boolean_t
+zfs_sha512ext_available(void)
+{
+	return (B_FALSE);
+}
+
 #endif	/* _SPL_SYS_SIMD_X86_H */

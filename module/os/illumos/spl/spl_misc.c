@@ -49,3 +49,53 @@ current_is_reclaim_thread(void)
 {
 	return (0);
 }
+
+/*
+ * cmn_err_once — print a message only once (rate-limited).
+ * illumos doesn't have this; just forward to cmn_err.
+ */
+void
+cmn_err_once(int ce, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	vcmn_err(ce, fmt, ap);
+	va_end(ap);
+}
+
+/*
+ * getcomm — return the name of the current process.
+ */
+const char *
+getcomm(void)
+{
+	return (curproc->p_user.u_comm);
+}
+
+/*
+ * thread_create_named — create a named kernel thread.
+ * illumos thread_create doesn't take a name; ignore it.
+ */
+kthread_t *
+thread_create_named(const char *name, caddr_t stk, size_t stksize,
+    void (*proc)(void *), void *arg, size_t len, proc_t *pp, int state,
+    pri_t pri)
+{
+	(void) name;
+	return (thread_create(stk, stksize, proc, arg, len, pp, state, pri));
+}
+
+/*
+ * vfs_ref / vrecycle — OpenZFS VFS helpers not in illumos.
+ */
+void
+vfs_ref(vfs_t *vfsp)
+{
+	VFS_HOLD(vfsp);
+}
+
+void
+vrecycle(vnode_t *vp)
+{
+	(void) vp;
+}

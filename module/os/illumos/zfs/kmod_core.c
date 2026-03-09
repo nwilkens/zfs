@@ -75,6 +75,12 @@ extern int zfsdev_ioctl(dev_t dev, int cmd, intptr_t arg, int flag,
 
 static dev_info_t *zfs_dip;
 
+/*
+ * LDI (Layered Driver Interface) identifier used by vdev_disk to
+ * open block devices.  Allocated during _init() and freed during _fini().
+ */
+ldi_ident_t zfs_li = NULL;
+
 extern uint_t rrw_tsd_key;
 
 /*

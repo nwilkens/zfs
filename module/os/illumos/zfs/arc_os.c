@@ -84,11 +84,13 @@ static int64_t arc_pages_pp_reserve = 64 << 10;	/* pages */
 
 /*
  * The zio_arena is a vmem arena used for ZIO data pages
- * on some illumos configurations. When non-NULL, we also
- * track its free space.
+ * on some illumos configurations.  When non-NULL, we also
+ * track its free space.  These are defined here (rather than
+ * merely extern'd) because the generic ZFS code references them
+ * and they must exist as symbols in the kernel module.
  */
-extern vmem_t *zio_arena;
-extern int arc_zio_arena_free_shift;
+vmem_t *zio_arena = NULL;
+int arc_zio_arena_free_shift = 6;
 
 /*
  * Return the amount of memory that can be consumed before reclaim will be

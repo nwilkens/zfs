@@ -96,3 +96,14 @@ spl_kmem_fini(void)
 {
 	/* Nothing to do. */
 }
+
+/*
+ * kmem_cache_reap_now — request immediate reaping of a cache.
+ * illumos has kmem_cache_reap_now in the kernel but OpenZFS
+ * declares it with a different signature. Provide a wrapper.
+ */
+void
+kmem_cache_reap_now(kmem_cache_t *cache)
+{
+	kmem_cache_reap(cache);
+}

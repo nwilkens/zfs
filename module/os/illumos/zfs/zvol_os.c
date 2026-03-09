@@ -152,3 +152,35 @@ zvol_os_set_capacity(zvol_state_t *zv, uint64_t capacity)
 	(void) zv;
 	(void) capacity;
 }
+
+/*
+ * Wait for all open references to close on the given zvol.
+ *
+ * Since zvols are not yet functional on illumos (create_minor returns
+ * ENOTSUP), this is a no-op.
+ */
+void
+zvol_wait_close(zvol_state_t *zv)
+{
+	(void) zv;
+}
+
+/*
+ * Initialize the zvol subsystem.
+ * Calls the common zvol_init_impl() which sets up the zvol hash table
+ * and registers with the SPA.
+ */
+int
+zvol_init(void)
+{
+	return (zvol_init_impl());
+}
+
+/*
+ * Tear down the zvol subsystem.
+ */
+void
+zvol_fini(void)
+{
+	zvol_fini_impl();
+}

@@ -211,6 +211,26 @@ typedef struct zfid_long {
 
 #define	ZSB_XATTR	0x0001		/* Enable user xattrs */
 
+/*
+ * Legacy ZFS_ENTER / ZFS_EXIT macros.
+ *
+ * Some illumos-specific code (e.g. zfs_acl.c, zfs_ctldir.c) still uses
+ * the old-style macros that do not take a tag parameter or return a
+ * value.  Provide them as wrappers around the modern zfs_enter/zfs_exit
+ * that use FTAG.
+ *
+ * ZFS_ENTER calls zfs_enter() and returns EIO on failure.
+ * ZFS_EXIT calls zfs_exit() with FTAG.
+ */
+#define	ZFS_ENTER(zfsvfs) \
+	do { \
+		int __zerr = zfs_enter((zfsvfs), FTAG); \
+		if (__zerr != 0) \
+			return (__zerr); \
+	} while (0)
+
+#define	ZFS_EXIT(zfsvfs)	zfs_exit((zfsvfs), FTAG)
+
 extern void zfs_init(void);
 extern void zfs_fini(void);
 

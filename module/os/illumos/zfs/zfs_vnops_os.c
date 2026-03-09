@@ -1265,3 +1265,138 @@ const fs_operation_def_t zfs_vnodeops_template[] = {
 	VOPNAME_VNEVENT,	{ .vop_vnevent = fs_vnevent_support },
 	NULL,			NULL
 };
+
+/*
+ * Directory vnode operations template.
+ *
+ * Directories use the same operations as the general vnodeops template
+ * above; the separate array is required because vn_make_ops() creates
+ * an independent vnodeops_t structure for each template.
+ *
+ * The vnodeops_t * pointers (zfs_dvnodeops, etc.) are defined in
+ * zfs_znode_os.c which also manages their lifecycle.
+ */
+const fs_operation_def_t zfs_dvnodeops_template[] = {
+	VOPNAME_OPEN,		{ .vop_open = zfs_open },
+	VOPNAME_CLOSE,		{ .vop_close = zfs_close },
+	VOPNAME_READ,		{ .vop_read = zfs_read_vnop },
+	VOPNAME_WRITE,		{ .vop_write = zfs_write_vnop },
+	VOPNAME_IOCTL,		{ .vop_ioctl = zfs_ioctl },
+	VOPNAME_GETATTR,	{ .vop_getattr = zfs_getattr },
+	VOPNAME_SETATTR,	{ .vop_setattr = zfs_setattr_vnop },
+	VOPNAME_ACCESS,		{ .vop_access = zfs_access_vnop },
+	VOPNAME_LOOKUP,		{ .vop_lookup = zfs_lookup },
+	VOPNAME_CREATE,		{ .vop_create = zfs_create_vnop },
+	VOPNAME_REMOVE,		{ .vop_remove = zfs_remove_vnop },
+	VOPNAME_LINK,		{ .vop_link = zfs_link_vnop },
+	VOPNAME_RENAME,		{ .vop_rename = zfs_rename_vnop },
+	VOPNAME_MKDIR,		{ .vop_mkdir = zfs_mkdir_vnop },
+	VOPNAME_RMDIR,		{ .vop_rmdir = zfs_rmdir_vnop },
+	VOPNAME_READDIR,	{ .vop_readdir = zfs_readdir },
+	VOPNAME_SYMLINK,	{ .vop_symlink = zfs_symlink_vnop },
+	VOPNAME_FSYNC,		{ .vop_fsync = zfs_fsync_vnop },
+	VOPNAME_INACTIVE,	{ .vop_inactive = zfs_inactive },
+	VOPNAME_FID,		{ .vop_fid = zfs_fid },
+	VOPNAME_SEEK,		{ .vop_seek = zfs_seek },
+	VOPNAME_PATHCONF,	{ .vop_pathconf = zfs_pathconf },
+	VOPNAME_GETSECATTR,	{ .vop_getsecattr = zfs_getsecattr_vnop },
+	VOPNAME_SETSECATTR,	{ .vop_setsecattr = zfs_setsecattr_vnop },
+	VOPNAME_VNEVENT,	{ .vop_vnevent = fs_vnevent_support },
+	NULL,			NULL
+};
+
+/*
+ * Regular file vnode operations template.
+ */
+const fs_operation_def_t zfs_fvnodeops_template[] = {
+	VOPNAME_OPEN,		{ .vop_open = zfs_open },
+	VOPNAME_CLOSE,		{ .vop_close = zfs_close },
+	VOPNAME_READ,		{ .vop_read = zfs_read_vnop },
+	VOPNAME_WRITE,		{ .vop_write = zfs_write_vnop },
+	VOPNAME_IOCTL,		{ .vop_ioctl = zfs_ioctl },
+	VOPNAME_GETATTR,	{ .vop_getattr = zfs_getattr },
+	VOPNAME_SETATTR,	{ .vop_setattr = zfs_setattr_vnop },
+	VOPNAME_ACCESS,		{ .vop_access = zfs_access_vnop },
+	VOPNAME_LOOKUP,		{ .vop_lookup = zfs_lookup },
+	VOPNAME_FSYNC,		{ .vop_fsync = zfs_fsync_vnop },
+	VOPNAME_INACTIVE,	{ .vop_inactive = zfs_inactive },
+	VOPNAME_FID,		{ .vop_fid = zfs_fid },
+	VOPNAME_SEEK,		{ .vop_seek = zfs_seek },
+	VOPNAME_PATHCONF,	{ .vop_pathconf = zfs_pathconf },
+	VOPNAME_GETSECATTR,	{ .vop_getsecattr = zfs_getsecattr_vnop },
+	VOPNAME_SETSECATTR,	{ .vop_setsecattr = zfs_setsecattr_vnop },
+	VOPNAME_SPACE,		{ .vop_space = zfs_space_vnop },
+	VOPNAME_VNEVENT,	{ .vop_vnevent = fs_vnevent_support },
+	NULL,			NULL
+};
+
+/*
+ * Symlink vnode operations template.
+ */
+const fs_operation_def_t zfs_symvnodeops_template[] = {
+	VOPNAME_GETATTR,	{ .vop_getattr = zfs_getattr },
+	VOPNAME_SETATTR,	{ .vop_setattr = zfs_setattr_vnop },
+	VOPNAME_ACCESS,		{ .vop_access = zfs_access_vnop },
+	VOPNAME_READLINK,	{ .vop_readlink = zfs_readlink },
+	VOPNAME_INACTIVE,	{ .vop_inactive = zfs_inactive },
+	VOPNAME_FID,		{ .vop_fid = zfs_fid },
+	VOPNAME_PATHCONF,	{ .vop_pathconf = fs_pathconf },
+	VOPNAME_VNEVENT,	{ .vop_vnevent = fs_vnevent_support },
+	NULL,			NULL
+};
+
+/*
+ * Extended attribute directory vnode operations template.
+ */
+const fs_operation_def_t zfs_xdvnodeops_template[] = {
+	VOPNAME_OPEN,		{ .vop_open = zfs_open },
+	VOPNAME_CLOSE,		{ .vop_close = zfs_close },
+	VOPNAME_IOCTL,		{ .vop_ioctl = zfs_ioctl },
+	VOPNAME_GETATTR,	{ .vop_getattr = zfs_getattr },
+	VOPNAME_SETATTR,	{ .vop_setattr = zfs_setattr_vnop },
+	VOPNAME_ACCESS,		{ .vop_access = zfs_access_vnop },
+	VOPNAME_LOOKUP,		{ .vop_lookup = zfs_lookup },
+	VOPNAME_CREATE,		{ .vop_create = zfs_create_vnop },
+	VOPNAME_REMOVE,		{ .vop_remove = zfs_remove_vnop },
+	VOPNAME_LINK,		{ .vop_link = zfs_link_vnop },
+	VOPNAME_RENAME,		{ .vop_rename = zfs_rename_vnop },
+	VOPNAME_READDIR,	{ .vop_readdir = zfs_readdir },
+	VOPNAME_FSYNC,		{ .vop_fsync = zfs_fsync_vnop },
+	VOPNAME_INACTIVE,	{ .vop_inactive = zfs_inactive },
+	VOPNAME_FID,		{ .vop_fid = zfs_fid },
+	VOPNAME_PATHCONF,	{ .vop_pathconf = zfs_pathconf },
+	VOPNAME_GETSECATTR,	{ .vop_getsecattr = zfs_getsecattr_vnop },
+	VOPNAME_SETSECATTR,	{ .vop_setsecattr = zfs_setsecattr_vnop },
+	VOPNAME_VNEVENT,	{ .vop_vnevent = fs_vnevent_support },
+	NULL,			NULL
+};
+
+/*
+ * .zfs control directory event node operations template.
+ * These are used for the snapshot control directory and its entries.
+ */
+const fs_operation_def_t zfs_evnodeops_template[] = {
+	VOPNAME_GETATTR,	{ .vop_getattr = zfs_getattr },
+	VOPNAME_SETATTR,	{ .vop_setattr = zfs_setattr_vnop },
+	VOPNAME_ACCESS,		{ .vop_access = zfs_access_vnop },
+	VOPNAME_INACTIVE,	{ .vop_inactive = zfs_inactive },
+	VOPNAME_FID,		{ .vop_fid = zfs_fid },
+	VOPNAME_PATHCONF,	{ .vop_pathconf = zfs_pathconf },
+	VOPNAME_VNEVENT,	{ .vop_vnevent = fs_vnevent_support },
+	NULL,			NULL
+};
+
+/*
+ * Shares directory vnode operations template.
+ */
+const fs_operation_def_t zfs_sharevnodeops_template[] = {
+	VOPNAME_GETATTR,	{ .vop_getattr = zfs_getattr },
+	VOPNAME_ACCESS,		{ .vop_access = zfs_access_vnop },
+	VOPNAME_INACTIVE,	{ .vop_inactive = zfs_inactive },
+	VOPNAME_FID,		{ .vop_fid = zfs_fid },
+	VOPNAME_PATHCONF,	{ .vop_pathconf = zfs_pathconf },
+	VOPNAME_GETSECATTR,	{ .vop_getsecattr = zfs_getsecattr_vnop },
+	VOPNAME_SETSECATTR,	{ .vop_setsecattr = zfs_setsecattr_vnop },
+	VOPNAME_VNEVENT,	{ .vop_vnevent = fs_vnevent_support },
+	NULL,			NULL
+};

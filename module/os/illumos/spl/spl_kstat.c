@@ -37,3 +37,20 @@
 
 #include <sys/zfs_context.h>
 #include <sys/kstat.h>
+
+/*
+ * kstat_set_raw_ops — set raw data callbacks on a kstat.
+ * On illumos, this is not natively available.  OpenZFS uses it for
+ * procfs-list style kstats.  Store the ops for later use.
+ */
+void
+kstat_set_raw_ops(kstat_t *ksp,
+    int (*headers)(char *buf, size_t size),
+    int (*data)(char *buf, size_t size, void *),
+    void *(*addr)(kstat_t *ksp, loff_t index))
+{
+	(void) ksp;
+	(void) headers;
+	(void) data;
+	(void) addr;
+}

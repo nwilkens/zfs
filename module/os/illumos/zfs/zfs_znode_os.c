@@ -2037,3 +2037,15 @@ zfs_rlimit_fsize(off_t fsize)
  * They were part of the illumos-joyent OS-specific code but have
  * been moved to platform-neutral shared code in the OpenZFS tree.
  */
+
+/*
+ * Asynchronous znode release.  On FreeBSD/Linux this dispatches the
+ * iput/VN_RELE to a taskq to avoid deadlocks when called within a tx.
+ * On illumos, VN_RELE is safe from any context, so we just call it
+ * directly.
+ */
+void
+zfs_zrele_async(znode_t *zp)
+{
+	VN_RELE(ZTOV(zp));
+}
