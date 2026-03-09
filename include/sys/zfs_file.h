@@ -35,6 +35,9 @@
 #if !defined(_KERNEL) && defined(__FreeBSD__)
 typedef off_t loff_t;
 #endif
+#if defined(__sun)
+typedef off_t loff_t;
+#endif
 
 #ifndef _KERNEL
 typedef struct zfs_file {
@@ -42,6 +45,8 @@ typedef struct zfs_file {
 	int f_dump_fd;
 } zfs_file_t;
 #elif defined(__linux__) || defined(__FreeBSD__)
+typedef struct file zfs_file_t;
+#elif defined(__sun)
 typedef struct file zfs_file_t;
 #else
 #error "unknown OS"

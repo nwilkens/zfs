@@ -1641,7 +1641,7 @@ spa_taskq_free_param_get(char *buf, zfs_kernel_param_t *kp)
 {
 	return (spa_taskq_param_get(ZIO_TYPE_FREE, buf, TRUE));
 }
-#else
+#elif defined(__FreeBSD__)
 /*
  * On FreeBSD load-time parameters can be set up before malloc() is available,
  * so we have to do all the parsing work on the stack.
